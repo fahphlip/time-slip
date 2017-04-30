@@ -1,103 +1,171 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <title>TimeSlip</title>
-  </head>
-  <style>
-   .crop {
-   border:0px;
-     padding:10px;
-   }
-   input {
-     background-color:black;
-     border:0px;
-     color:white;
-     border-radius: 5px;
-   }
-  .topic {
-    background-color:grey;
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>TimeSlip</title>
+</head>
+<style>
+  .crop {
+    border: 0px;
+    padding: 10px;
   }
+  
+  input {
+    background-color: black;
+    border: 0px;
+    color: white;
+    border-radius: 5px;
+  }
+  
+  .topic {
+    background-color: grey;
+  }
+  
   .height {
     height: 50px;
   }
+  
   .grey {
-    background-color:grey;
+    background-color: grey;
   }
   
-   }
-  </style>
+  .head {
+    background-color: red;
+    margin: 0px;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  
+  input[type=text] {
+    width: 200px;
+    height: 25px;
+    background-color: white;
+    color: black;
+    border: solid 1px black;
+  }
+  
+  input[type=date] {
+    width: 200px;
+    height: 25px;
+    background-color: white;
+    color: black;
+    border: solid 1px black;
+  }
+  
+  input[type=submit] {
+    width: 100px;
+    height: 25px;
+    background-color: white;
+    color: black;
+    border: solid 1px black;
+  }
+  
+  input[type=button] {
+    width: 25px;
+    height: 25px;
+    background-color: white;
+    color: black;
+    border: solid 1px black;
+    font-size: 20px;
+    display: inline-block;
+  }
+</style>
+<center>
+
   <body style="margin:0px;">
-    <table width="300" cellpadding="0" cellspacing="0" border="1">
-      <tr style="border-buttom-width:1px;">
-        <td colspan="2" class="height"
-          style=
-          "background-color:red;
-          color:White;" 
-          border-buttom-width="1">
-            <center>
-              Time Slip &nbsp;&nbsp;&nbsp;<input type="button" value="+">
-            </center></td>
-      </tr>
-      <tr>
-        <td border-buttom-width="1">
-          <table cellpadding="0" cellspacing="0" border="0" width="300">
-            <tr class="height">
-              <td  class="crop">
-              Topic:
-              </td>
-              <td  class="crop">
-              sopejospeofjp
-              </td>
-            </tr>
-            <tr  class="height">
-              <td  class="crop">
-              Date : 
-              </td>
-                <td  class="crop">
-                19/10/1890
+    <div id="app">
+      <table cellpadding="0" cellspacing="0" border="1" v-if="mode == 'list'">
+        <tr>
+          <td>
+            <h1 class="head">Time Slip &nbsp;&nbsp;&nbsp;<input type="button" value="+"></h1>
+          </td>
+        </tr>
+        <tr v-for="topicItem in topicList">
+          <td>
+            <table cellpadding="0" cellspacing="0" border="0" width="300">
+              <tr class="height">
+                <td class="crop">
+                  Topic:
+                </td>
+                <td class="crop">
+                  {{topicItem.topic}}
                 </td>
               </tr>
               <tr class="height">
-                <td  class="crop">
-                 Day passed
+                <td class="crop">
+                  Date :
                 </td>
-      <td  class="crop">
-        2099 day ago
-        </td>
-     </tr>
-     </table>
-     </td></tr>
-     <tr>
-        <td border-buttom-width="1">
-          <table cellpadding="0" cellspacing="0" border="0" width="300">
-            <tr class="height">
-              <td  class="crop">
-              Topic:
-              </td>
-              <td  class="crop">
-              sopejospeofjp
-              </td>
-            </tr>
-            <tr  class="height">
-              <td  class="crop">
-              Date : 
-              </td>
-                <td  class="crop">
-                19/10/1890
+                <td class="crop">
+                  {{topicItem.date}}
                 </td>
               </tr>
               <tr class="height">
-                <td  class="crop">
-                 Day passed
+                <td class="crop">
+                  Day passed
                 </td>
-      <td  class="crop">
-        2099 day ago
-        </td>
-     </tr>
-     </table>
-     </td></tr>
-    </table>
+                <td class="crop">
+                  {{daysSince(topicItem.date)}}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <table callpadding="0" callspacing="0" border="0" v-if="mode == 'add'">
+        <tr><td><h1 class="head">New Day</h1>
+        <br>
+        <div>
+          Topic : <input type="text" name="topic" placeholder=" Your Topic" v-model="newTopic">
+          <br><br> Date : <input type="date" name="date" v-model="newDate">
+          <br><br>
+          <input type="submit" value="Create" v-on:click="add">
+        </div>
+        <br>
+        </td></tr>
+      </table>
+    </div>
   </body>
+</center>
+
+<script src="https://unpkg.com/vue"></script>
+<script>
+  var thaiDateToISODate = (thaiDate) => {
+    var Day = thaiDate.split("/")[0]
+    var Month = thaiDate.split("/")[1]
+    var Year = thaiDate.split("/")[2]
+
+    var result = Year + "-" + Month + "-" + Day
+    return result // Y - m - d
+  }
+
+  var daysSince = (dateString) => {
+    var now = new Date()
+
+    var d = new Date(thaiDateToISODate(dateString));
+    return Math.floor((now - d) / 86400000) + " Days ago"
+  }
+  var app = new Vue({
+    el: '#app',
+    data: {
+      mode : "list",
+      topicList: [
+        { topic: "sopejospeofjp", date: "19/10/1998" },
+        { topic: "BirthDay", date: "02/10/1999" }
+      ],
+      newTopic: "", newDate: ""
+    },
+    methods: {
+      daysSince: daysSince,
+      add: () => {
+        console.log(app.newTopic, app.newDate)
+        var newEntry = { topic: app.newTopic, date: app.newDate }
+        app.topicList = [...app.topicList, newEntry]
+      }
+    }
+
+  })
+
+</script>
+
 </html>
