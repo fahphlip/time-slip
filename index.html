@@ -78,7 +78,7 @@
       <table cellpadding="0" cellspacing="0" border="1" v-if="mode == 'list'">
         <tr>
           <td>
-            <h1 class="head">Time Slip &nbsp;&nbsp;&nbsp;<input type="button" value="+"></h1>
+            <h1 class="head">Time Slip &nbsp;&nbsp;&nbsp;<input type="button" value="+" v-on:click="create"></h1>
           </td>
         </tr>
         <tr v-for="topicItem in topicList">
@@ -113,22 +113,39 @@
         </tr>
       </table>
       <table callpadding="0" callspacing="0" border="0" v-if="mode == 'add'">
-        <tr><td><h1 class="head">New Day</h1>
-        <br>
-        <div>
-          Topic : <input type="text" name="topic" placeholder=" Your Topic" v-model="newTopic">
-          <br><br> Date : <input type="date" name="date" v-model="newDate">
-          <br><br>
-          <input type="submit" value="Create" v-on:click="add">
-        </div>
-        <br>
-        </td></tr>
+        <tr>
+          <td>
+            <h1 class="head">New Day</h1>
+            <br>
+            <div>
+              Topic : <input type="text" name="topic" placeholder=" Your Topic" v-model="newTopic">
+              <br><br> Date : <input type="date" name="date" v-model="newDate">
+              <br><br>
+              <input type="submit" value="Create" v-on:click="add">
+            </div>
+            <br>
+          </td>
+        </tr>
       </table>
     </div>
   </body>
 </center>
 
 <script src="https://unpkg.com/vue"></script>
+<script src="https://www.gstatic.com/firebasejs/3.9.0/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyA4OWyGuSnT9fzgzQD5MRqbgJsUC0rH4pI",
+    authDomain: "time-slip-30bc4.firebaseapp.com",
+    databaseURL: "https://time-slip-30bc4.firebaseio.com",
+    projectId: "time-slip-30bc4",
+    storageBucket: "time-slip-30bc4.appspot.com",
+    messagingSenderId: "363212096936"
+  };
+  firebase.initializeApp(config);
+
+</script>
 <script>
   var thaiDateToISODate = (thaiDate) => {
     var Day = thaiDate.split("/")[0]
@@ -148,22 +165,37 @@
   var app = new Vue({
     el: '#app',
     data: {
-      mode : "list",
+      mode: "list",
       topicList: [
-        { topic: "sopejospeofjp", date: "19/10/1998" },
-        { topic: "BirthDay", date: "02/10/1999" }
       ],
       newTopic: "", newDate: ""
     },
     methods: {
       daysSince: daysSince,
       add: () => {
-        console.log(app.newTopic, app.newDate)
         var newEntry = { topic: app.newTopic, date: app.newDate }
-        app.topicList = [...app.topicList, newEntry]
+        topicDatabase.push(newEntry)
+        app.mode ="list"
+        
+      }
+      ,
+      create: () => {
+        app.mode = "add"
       }
     }
 
+  })
+  var convertFromFirebase = (data) => {
+      var ids = Object.keys(data)
+      return ids.map(id => data[id])
+    
+  }
+
+  var database = firebase.database()
+  var topicDatabase = database.ref("topiclist")
+  topicDatabase.on('value', (snapshot) => {
+    var topiclist = convertFromFirebase(snapshot.val())
+    app.topicList = topiclist
   })
 
 </script>
