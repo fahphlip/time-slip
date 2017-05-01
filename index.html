@@ -107,6 +107,13 @@
                 <td class="crop">
                   {{daysSince(topicItem.date)}}
                 </td>
+              </tr><tr class="height">
+                <td class="crop">
+                  <input type="button" value="x" v-on:click = "remove(topicItem)">
+                </td>
+                <td class="crop">
+                  
+                </td>
               </tr>
             </table>
           </td>
@@ -181,29 +188,36 @@
         if (checkResult === "OK") {
           var newEntry = { topic: app.newTopic, date: app.newDate }
           topicDatabase.push(newEntry)
+          app.newTopic = ""
+          app.newDate = ""
           app.mode = "list"
         } else {
           var error = checkResult
           app.error = checkResult
         }
-
       }
       ,
       create: () => {
         app.mode = "add"
+        
       }
+      ,
+      remove : (topic) => {
+        topicDatabase.child(topic.id).remove()
+        console.log(topic)
+      } 
     }
 
   })
   var convertFromFirebase = (data) => {
     var ids = Object.keys(data)
     return ids.map(id => {
-     return {
+      return {
         topic: data[id].topic,
         date: data[id].date,
         id: id
       }
-      
+
     })
 
   }
@@ -213,9 +227,8 @@
   topicDatabase.on('value', (snapshot) => {
     var topiclist = convertFromFirebase(snapshot.val())
     app.topicList = topiclist
-    console.log(app.topicList)
+    console.log(topiclist)
   })
-
 
 </script>
 
