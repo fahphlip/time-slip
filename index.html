@@ -116,6 +116,7 @@
         <tr>
           <td>
             <h1 class="head">New Day</h1>
+            <h2 v-if="error">{{error}}</h2>
             <br>
             <div>
               Topic : <input type="text" name="topic" placeholder=" Your Topic" v-model="newTopic">
@@ -165,6 +166,7 @@
   var app = new Vue({
     el: '#app',
     data: {
+      error: "",
       mode: "list",
       topicList: [
       ],
@@ -173,10 +175,18 @@
     methods: {
       daysSince: daysSince,
       add: () => {
-        var newEntry = { topic: app.newTopic, date: app.newDate }
-        topicDatabase.push(newEntry)
-        app.mode ="list"
-        
+        var check = (topic, date) => topic.length === 0 ? "Enter Topic" : (date.length === 0 ? "Enter Date" : "OK")
+        var checkResult = check(app.newTopic, app.newDate)
+        console.log(checkResult)
+        if (checkResult === "OK") {
+          var newEntry = { topic: app.newTopic, date: app.newDate }
+          topicDatabase.push(newEntry)
+          app.mode = "list"
+        } else {
+          var error = checkResult
+          app.error = checkResult
+        }
+
       }
       ,
       create: () => {
@@ -186,9 +196,16 @@
 
   })
   var convertFromFirebase = (data) => {
-      var ids = Object.keys(data)
-      return ids.map(id => data[id])
-    
+    var ids = Object.keys(data)
+    return ids.map(id => {
+     return {
+        topic: data[id].topic,
+        date: data[id].date,
+        id: id
+      }
+      
+    })
+
   }
 
   var database = firebase.database()
@@ -196,7 +213,9 @@
   topicDatabase.on('value', (snapshot) => {
     var topiclist = convertFromFirebase(snapshot.val())
     app.topicList = topiclist
+    console.log(app.topicList)
   })
+
 
 </script>
 
